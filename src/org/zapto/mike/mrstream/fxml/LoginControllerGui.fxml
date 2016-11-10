@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Pane fx:id="background" prefHeight="250.0" prefWidth="200.0" style="-fx-background-color: black; -fx-background-radius: 15;" />
+      <VBox fx:id="vbox" alignment="BASELINE_CENTER" prefHeight="250.0" prefWidth="200.0" spacing="12.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+         <children>
+            <HBox alignment="TOP_RIGHT" prefHeight="24.0" prefWidth="180.0" spacing="8.0">
+               <children>
+                  <Button fx:id="close" maxHeight="15.0" maxWidth="15.0" minHeight="15.0" minWidth="15.0" mnemonicParsing="false" prefHeight="15.0" prefWidth="15.0" style="-fx-background-color: red; -fx-background-radius: 15;" />
+               </children>
+            </HBox>
+            <Label text="Server Address" textFill="LIME" />
+            <TextField fx:id="serverAddress" />
+            <Label text="Alias" textFill="LIME" />
+            <TextField fx:id="alias" />
+            <Button fx:id="connect" mnemonicParsing="false" text="Connect" />
+            <Label fx:id="statusLabel" text="Awaiting connecting" textFill="LIME" />
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
