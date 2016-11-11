@@ -3,6 +3,9 @@ package org.zapto.mike.mrstreamserver;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Label;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 
 class Channel{
 
@@ -10,26 +13,26 @@ class Channel{
 	private ClientHandler channelOwner;
 	private String channelName;
 	private VideoHandler videoHandler;
-//	private Label name;
-//	private Label ownerName;
-//	private Label population;
-//	private GridPane channelPane;
+	private Label name;
+	private Label ownerName;
+	private Label population;
+	private GridPane channelPane;
 
 
 	public Channel(ClientHandler owner, String channelName) {
 		this.channelOwner = owner;
 		this.channelName= channelName;
 		this.videoHandler = new VideoHandler(this);
-//		this.name = new Label(channelName);
-//		this.ownerName = new Label(channelOwner.getName());
-//		this.population = new Label(1 + "");
-//		this.channelPane = new GridPane();
-//		ColumnConstraints cc = new ColumnConstraints();
-//		cc.setPercentWidth(33);
-//		channelPane.getColumnConstraints().addAll(cc, cc, cc);
-//		channelPane.add(this.name, 0, 0);
-//		channelPane.add(this.ownerName, 1, 0);
-//		channelPane.add(this.population, 2, 0);
+		this.name = new Label(channelName);
+		this.ownerName = new Label(channelOwner.getName());
+		this.population = new Label(1 + "");
+		this.channelPane = new GridPane();
+		ColumnConstraints cc = new ColumnConstraints();
+		cc.setPercentWidth(33);
+		channelPane.getColumnConstraints().addAll(cc, cc, cc);
+		channelPane.add(this.name, 0, 0);
+		channelPane.add(this.ownerName, 1, 0);
+		channelPane.add(this.population, 2, 0);
 		clients = FXCollections.observableArrayList();
 		clients.addListener(new ListChangeListener<ClientHandler>() {
 

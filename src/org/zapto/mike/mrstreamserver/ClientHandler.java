@@ -106,6 +106,10 @@ class ClientHandler implements Runnable{
 				sendMessage("Cannot join channel " + (String)p.getData()[1]);
 			}
 			break;
+		case "createChannel":
+			if(server.validChannelName((String)p.getData()[1])) {
+				server.addChannel(new Channel(this, (String)p.getData()[1]));
+			}
 		}
 
 	}

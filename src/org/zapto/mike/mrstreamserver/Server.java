@@ -159,6 +159,22 @@ class Server implements Runnable{
 
 	void addChannel(Channel channel) {
 		channels.add(channel);
+		sendToGlobalList(new Packet("channel", "newChannel", channel.getName(), channel.getOwner().getName()));
+	}
+
+	boolean validChannelName(String name) {
+		for(Channel c : channels) {
+			if(c.getName().equals(name)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void sendToGlobalList(Packet p) {
+		for(ClientHandler c : globalClientList) {
+			c.sendPacket(p);
+		}
 	}
 
 	public boolean moveClient(ClientHandler client, String channelName) {

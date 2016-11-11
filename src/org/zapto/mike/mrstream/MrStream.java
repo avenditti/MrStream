@@ -19,8 +19,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -29,8 +29,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -76,6 +74,10 @@ public final class MrStream extends Application {
 	Button createChannel;
 	@FXML
 	TextField channelName;
+	@FXML
+	ScrollPane channelScrollPane;
+	@FXML
+	ScrollPane serverScrollPane;
 
 	private double xOffset = 0;
     private double yOffset = 0;
@@ -132,18 +134,18 @@ public final class MrStream extends Application {
 	}
 
 	private void createHandlers() {
-//		createChannel.setOnAction(new EventHandler<ActionEvent>() {
-//
-//			@Override
-//			public void handle(ActionEvent event) {
-//				try {
-//					handler.sendPacket(new Packet("channel", "createChannel"));
-//				} catch (IOException e) {
-//					// HANDLE EXCEPTION
-//				}
-//			}
-//
-//		});
+		createChannel.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				try {
+					handler.sendPacket(new Packet("channel", "createChannel", ));
+				} catch (IOException e) {
+					// HANDLE EXCEPTION
+				}
+			}
+
+		});
 		main.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
 			@Override
