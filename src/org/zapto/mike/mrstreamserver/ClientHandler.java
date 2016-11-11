@@ -41,6 +41,7 @@ class ClientHandler implements Runnable{
 			 */
 			name = (String)p.data[0];
 			handler.sendPacket(new Packet("nameAccepted", name ));
+			handler.sendPacket(new Packet("channel", "initList", server.getChannelList()));
 			out.println(name + " connected to the server.");
 			server.notifyGlobalList(name + " connected to the server.");
 			thread.start();
@@ -108,8 +109,9 @@ class ClientHandler implements Runnable{
 			break;
 		case "createChannel":
 			if(server.validChannelName((String)p.getData()[1])) {
-				server.addChannel(new Channel(this, (String)p.getData()[1]));
+				server.addChannel((String)p.getData()[1], this);
 			}
+			break;
 		}
 
 	}
@@ -154,7 +156,11 @@ class ClientHandler implements Runnable{
 	}
 
 	void setChannel(Channel c) {
+		if(channel != null) {
+			channel.removeClient(this);
+		}
 		channel = c;
+		sendPacket(new Packet("channel", "move", c.getName()));
 	}
 
 	String getName() {
@@ -208,5 +214,9 @@ class ClientHandler implements Runnable{
 
 	Double getCurrentTime() {
 		return currentTime;
+	}
+
+	String getCurrentChannelName() {
+		return channel.getName();
 	}
 }

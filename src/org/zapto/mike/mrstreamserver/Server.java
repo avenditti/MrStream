@@ -8,31 +8,29 @@ import java.util.ArrayList;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 
 class Server implements Runnable{
 
 	private ServerSocket serverSock;
 	private ArrayList<ClientHandler> globalClientList;
 	private ArrayList<Channel> channels;
-	private PrintStream out;
+	PrintStream out;
 	private BooleanProperty stopping;
-	static final Channel rootChannel = new Channel(null,"ROOT") {
-
-		@Override
-		void removeClient(ClientHandler client) {
-			clients.remove(client);
-			notifyServerChat(client.getName() + " left the channel");
-		}
-	};
+	final Channel rootChannel;
 	private final int port = 25567;
 
 	public Server(PrintStream serverPrint) {
 		/*
 		 *	Create a boolean listener to shutdown the server socket when closed
 		 */
+		rootChannel = new Channel(null,"Root", this) {
+
+			@Override
+			void removeClient(ClientHandler client) {
+				clients.remove(client);
+				notifyServerChat(client.getName() + " left the channel");
+			}
+		};
 		globalClientList = new ArrayList<ClientHandler>();
 		stopping = new SimpleBooleanProperty(false);
 		this.out = serverPrint;
@@ -103,8 +101,8 @@ class Server implements Runnable{
 	void stop() {
 		stopping.set(true);
 		synchronized (channels) {
-			for(Channel c : channels) {
-				c.closeChannel();
+			for (int i = 1; i < channels.size(); i++) {
+				channels.get(i);
 			}
 		}
 		while(globalClientList.size() > 0) {
@@ -149,17 +147,35 @@ class Server implements Runnable{
 		return accum;
 	}
 
-	String getChannelList() {
-		String channelNames = "";
-		for(Channel c : channels) {
-			channelNames += c.getName() + ":" + c.getOwner();
+	String[] getChannelList() {
+		synchronized(channels) {
+			String[] channelNames = new String[channels.size()];
+			channelNames[0] = "Root:Server";
+			for (int i = 1; i < channelNames.length; i++) {
+				channelNames[i] = channels.get(i).getName() + ":" + channels.get(i).getOwner().getName();
+			}
+			return channelNames;
 		}
-		return channelNames;
 	}
 
-	void addChannel(Channel channel) {
+	void addChannel(String channelName, ClientHandler owner) {
+		Channel channel = new Channel(owner, channelName, this);
 		channels.add(channel);
-		sendToGlobalList(new Packet("channel", "newChannel", channel.getName(), channel.getOwner().getName()));
+		sendToGlobalList(new Packet("channel", "newChannel", owner.getName(), channelName));
+		moveClient(channel, owner);
+	}
+
+	private void moveClient(Channel channel, ClientHandler client) {
+		boolean canJoin = true; //Create auth for joining channel here
+		/*
+		 * Send update channel populations here
+		 */
+		if(canJoin && !channel.getName().equals(client.getCurrentChannelName())) {
+			client.setChannel(channel);
+			channel.addClient(client);
+		} else {
+			//Failed Auth
+		}
 	}
 
 	boolean validChannelName(String name) {
@@ -177,7 +193,7 @@ class Server implements Runnable{
 		}
 	}
 
-	public boolean moveClient(ClientHandler client, String channelName) {
+	boolean moveClient(ClientHandler client, String channelName) {
 		for(Channel c : channels) {
 			if(c.getName().equals(channelName)) {
 				c.addClient(client);
@@ -186,5 +202,10 @@ class Server implements Runnable{
 			}
 		}
 		return false;
+	}
+
+	void removeChannel(Channel channel) {
+		channels.remove(channel);
+		sendToGlobalList(new Packet("channel", "remove", channel.getName()));
 	}
 }

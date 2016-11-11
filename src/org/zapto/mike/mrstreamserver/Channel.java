@@ -1,11 +1,7 @@
 package org.zapto.mike.mrstreamserver;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 
 class Channel{
 
@@ -13,54 +9,33 @@ class Channel{
 	private ClientHandler channelOwner;
 	private String channelName;
 	private VideoHandler videoHandler;
-	private Label name;
-	private Label ownerName;
-	private Label population;
-	private GridPane channelPane;
+	private Server server;
 
 
-	public Channel(ClientHandler owner, String channelName) {
+	public Channel(ClientHandler owner, String channelName, Server server) {
 		this.channelOwner = owner;
 		this.channelName= channelName;
+		this.server = server;
 		this.videoHandler = new VideoHandler(this);
-		this.name = new Label(channelName);
-		this.ownerName = new Label(channelOwner.getName());
-		this.population = new Label(1 + "");
-		this.channelPane = new GridPane();
-		ColumnConstraints cc = new ColumnConstraints();
-		cc.setPercentWidth(33);
-		channelPane.getColumnConstraints().addAll(cc, cc, cc);
-		channelPane.add(this.name, 0, 0);
-		channelPane.add(this.ownerName, 1, 0);
-		channelPane.add(this.population, 2, 0);
 		clients = FXCollections.observableArrayList();
-		clients.addListener(new ListChangeListener<ClientHandler>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends ClientHandler> c) {
-				if(clients.size() > 0) {
-					notifyServerChat(clients.get(clients.size()-1).getName() + " joined the channel");
-				}
-			}
-
-		});
-
 	}
 
 	void closeChannel() {
 		videoHandler.shutdown();
+		server.out.println("Closing channel " + channelName);
 		synchronized(clients) {
 			for(ClientHandler c : clients) {
-				c.setChannel(Server.rootChannel);
+				c.setChannel(server.rootChannel);
 			}
 		}
+		server.removeChannel(this);
 	}
 
 	void addClient(ClientHandler client) {
-		if(channelOwner == null) {
-			channelOwner = client;
-		}
 		clients.add(client);
+		/*
+		 * Update clientList
+		 */
 		client.sendMessage("Owner of channel - " + channelOwner);
 	}
 
@@ -73,7 +48,15 @@ class Channel{
 			clients.remove(client);
 			videoHandler.removeClient(client);
 		}
-		notifyServerChat(client.getName() + " left the channel");
+		if(clients.size() <= 0) {
+			closeChannel();
+			return;
+		}
+		/*
+		 * Update clientList
+		 */
+		notifyChannel(client.getName() + " left the channel");
+		client.sendMessage("You have left the channel " + channelName);
 	}
 
 	void notifyChannel(String message) {

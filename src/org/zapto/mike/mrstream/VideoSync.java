@@ -269,20 +269,22 @@ public class VideoSync extends Application {
 	}
 
 	void removeClientFromList(VideoClient v, String host) {
-		Platform.runLater(new Runnable() {
+		if(v != null) {
+			Platform.runLater(new Runnable() {
 
-			@Override
-			public void run() {
-				clientListBox.getChildren().remove(clientList.get(v.getName()).getGridPane());
-				clientList.remove(v.getName());
-			}
+				@Override
+				public void run() {
+					clientListBox.getChildren().remove(clientList.get(v.getName()).getGridPane());
+					clientList.remove(v.getName());
+				}
 
-		});
-		if(v.getName().equals(channelHost)) {
-			for(ClientEntry c : clientList.values()) {
-				if(c.getName().equals(host)) {
-					c.setHost(true);
-					break;
+			});
+			if(v.getName().equals(channelHost)) {
+				for(ClientEntry c : clientList.values()) {
+					if(c.getName().equals(host)) {
+						c.setHost(true);
+						break;
+					}
 				}
 			}
 		}

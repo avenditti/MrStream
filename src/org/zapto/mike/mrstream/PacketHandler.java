@@ -19,11 +19,13 @@ class PacketHandler implements Runnable{
 	private PrintStream channelOut;
 	private boolean stopping;
 	private Object buffer;
+	private MrStream stream;
 	private VideoSync vs;
 
-	public PacketHandler(Socket sock, PrintStream serverOut, PrintStream channelOut) {
+	public PacketHandler(Socket sock, PrintStream serverOut, PrintStream channelOut, MrStream stream) {
 		try {
 			stopping = false;
+			this.stream = stream;
 			this.sock = sock;
 			oos = new ObjectOutputStream(sock.getOutputStream());
 			iis = new ObjectInputStream(sock.getInputStream());
@@ -51,6 +53,27 @@ class PacketHandler implements Runnable{
 					break;
 				case "serverChat":
 					serverOut.println((String)p.getData()[0]);
+					break;
+				case "channel":
+					switch((String)p.getData()[0]) {
+					case "initList":
+						String[] channels = (String[])p.getData()[1];
+						String[] info;
+						for (int i = 0; i < channels.length; i++) {
+							info = channels[i].split(":");
+							stream.newChannel(info[1], info[0]);
+						}
+						break;
+					case "newChannel":
+						stream.newChannel((String)p.getData()[1], (String)p.getData()[2]);
+						break;
+					case "move":
+						stream.moveChannel((String)p.getData()[1]);
+						break;
+					case "remove":
+						stream.removeChannel((String)p.getData()[1]);
+						break;
+					}
 					break;
 				case "video":
 					if(vs != null) {

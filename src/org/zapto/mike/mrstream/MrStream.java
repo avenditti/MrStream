@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import org.zapto.mike.mrstreamserver.Packet;
 
@@ -19,8 +20,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -29,6 +30,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -75,9 +78,11 @@ public final class MrStream extends Application {
 	@FXML
 	TextField channelName;
 	@FXML
-	ScrollPane channelScrollPane;
+	VBox channelList;
 	@FXML
-	ScrollPane serverScrollPane;
+	VBox clientList;
+	@FXML
+	TextField channelNameField;
 
 	private double xOffset = 0;
     private double yOffset = 0;
@@ -89,7 +94,8 @@ public final class MrStream extends Application {
 	private PrintStream channelStream;
 	private LoginGui lg;
 	private VideoSync videoSync;
-//	private Pane selectedChannel;
+	private ArrayList<Channel> channels;
+	private Channel selectedChannel;
 
 	@FXML
 	private void initialize() {
@@ -107,6 +113,7 @@ public final class MrStream extends Application {
 	public void start(Stage stage) throws Exception {
 		main = new Stage();
 		try {
+			channels = new ArrayList<Channel>();
 			/*
 			 * Initialize the gui with the fxml document
 			 */
@@ -139,9 +146,21 @@ public final class MrStream extends Application {
 			@Override
 			public void handle(ActionEvent event) {
 				try {
-					handler.sendPacket(new Packet("channel", "createChannel", ));
+					handler.sendPacket(new Packet("channel", "createChannel", channelNameField.getText()));
 				} catch (IOException e) {
-					// HANDLE EXCEPTION
+				}
+			}
+
+		});
+		joinChannel.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				try {
+					if(selectedChannel != null && !sock.isClosed()) {
+						handler.sendPacket(new Packet("channel", "join", selectedChannel.getName()));
+					}
+				} catch (IOException e) {
 				}
 			}
 
@@ -262,7 +281,7 @@ public final class MrStream extends Application {
 			lg.changeStatus("No server on this address");
 			throw new ConnectionError();
 		}
-		handler = new PacketHandler(sock, serverStream, channelStream);
+		handler = new PacketHandler(sock, serverStream, channelStream, this);
 		handler.sendPacket(new Packet("login", new Object[] { name }));
 		boolean passLogin = false;
 		Packet p;
@@ -376,7 +395,7 @@ public final class MrStream extends Application {
 
 	private void makeDragable(Pane p) {
 		/*
-		 * Make the window draggable by the menu bar
+		 * Make the window dragable by the menu bar
 		 */
 		p.setOnMousePressed(new EventHandler<MouseEvent>() {
             @Override
@@ -430,6 +449,103 @@ public final class MrStream extends Application {
 		});
 	}
 
+	void newChannel(String ownerName, String channelName) {
+		Channel c = new Channel(ownerName, channelName);
+		synchronized(channels) {
+			channels.add(c);
+		}
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				channelList.getChildren().add(c.channelPane);
+			}
+
+		});
+		c.channelPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+				if(selectedChannel != null) {
+					selectedChannel.clearColor();
+				}
+				selectedChannel = c;
+				c.highlightChannel();
+			}
+
+		});
+	}
+
+	void moveChannel(String channelName) {
+		synchronized(channels) {
+			for(Channel c : channels) {
+				if(c.getName().equals(channelName)) {
+					/*
+					 * Joined Channel Styling
+					 */
+					c.highlightChannel();
+					return;
+				}
+			}
+		}
+		/*
+		 * request clientList
+		 */
+	}
+
+	public void removeChannel(String channelName) {
+		synchronized(channels) {
+			for(Channel c : channels) {
+				if(c.getName().equals(channelName)) {
+					channels.remove(c);
+					Platform.runLater(new Runnable() {
+
+						@Override
+						public void run() {
+							channelList.getChildren().remove(c.channelPane);
+						}
+
+					});
+					return;
+				}
+			}
+		}
+	}
+
+}
+
+class Channel {
+
+	private Label name;
+	Label owner;
+	Label population;
+	GridPane channelPane;
+
+	public Channel(String ownerName, String channelName) {
+		name = new Label(channelName);
+		owner = new Label(ownerName);
+		population = new Label(1 + "");
+		channelPane  = new GridPane();
+		ColumnConstraints cc = new ColumnConstraints();
+		cc.setPercentWidth(33);
+		channelPane.getColumnConstraints().addAll(cc, cc, cc);
+		channelPane.add(name, 0, 0);
+		channelPane.add(owner, 1, 0);
+		channelPane.add(population, 2, 0);
+
+	}
+
+	public void clearColor() {
+		channelPane.setStyle("-fx-background-color: transparent");
+	}
+
+	void highlightChannel() {
+		channelPane.setStyle("-fx-background-color: green");
+	}
+
+	String getName() {
+		return name.getText();
+	}
 }
 
 
