@@ -15,20 +15,17 @@ class Server implements Runnable{
 	private ArrayList<ClientHandler> globalClientList;
 	private ArrayList<Channel> channels;
 	PrintStream out;
-	private BooleanProperty stopping;
-//	final Channel rootChannel;
+	private BooleanProperty stopping;	
 	private final int port = 25567;
 
 	public Server(PrintStream serverPrint) {
 		/*
 		 *	Create a boolean listener to shutdown the server socket when closed
 		 */
-//		rootChannel = new Channel("Owner","Root", this);
 		globalClientList = new ArrayList<ClientHandler>();
 		stopping = new SimpleBooleanProperty(false);
 		this.out = serverPrint;
 		channels = new ArrayList<Channel>();
-//		channels.add(rootChannel);
 		stopping.addListener((obj, oldVal, newVal) -> {
 			try {
 				serverSock.close();
@@ -66,8 +63,6 @@ class Server implements Runnable{
 			public void run() {
 				try {
 					ClientHandler client = new ClientHandler(sock, out, server);
-//					channels.get(0).addClient(client);
-//					client.setChannel(channels.get(0));
 					globalClientList.add(client);
 				} catch (IOException | ClassNotFoundException e) {
 					try {

@@ -30,8 +30,7 @@ public class PacketHandler {
 	}
 
 	Packet recievePacket() throws IOException, ClassNotFoundException {
-		Object o = iis.readObject();
-		return (Packet)o;
+		return (Packet)iis.readObject();
 	}
 
 	void stop() {

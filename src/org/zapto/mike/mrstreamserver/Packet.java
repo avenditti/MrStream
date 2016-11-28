@@ -21,6 +21,4 @@ public class Packet implements Serializable{
 		return data;
 	}
 
-
-
 }

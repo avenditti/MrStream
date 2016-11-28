@@ -36,7 +36,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
@@ -177,7 +176,7 @@ public final class MrStream extends Application {
 
 		});
 		/*
-		 * Handle the show and hide video sync buttons
+		 * Handle the show video sync button
 		 */
 		button1.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -251,7 +250,6 @@ public final class MrStream extends Application {
 			lg = new LoginGui(loginGui, this);
 			fxml.setController(lg);
 			loginGui.initOwner(main);
-			loginGui.initModality(Modality.WINDOW_MODAL);
 			loginGui.initStyle(StageStyle.TRANSPARENT);
 			loginGui.setScene(new Scene(fxml.load(), Color.TRANSPARENT));
 

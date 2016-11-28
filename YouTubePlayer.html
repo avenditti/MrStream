@@ -3,6 +3,7 @@
     <body>
         <div id="player"></div>
         <script>
+
         	var tag = document.createElement('script');
 		tag.src = "https://www.youtube.com/iframe_api";
 		var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -12,9 +13,11 @@
 		function onYouTubeIframeAPIReady() {
     			alert("APIReady");
   		}
+
 		function setVolume(num) {
 			player.setVolume(num * .1);
 		}
+
 		function changeVid(video) {
         		player = new YT.Player('player', {
 				height: '480',
@@ -35,14 +38,17 @@
 			});
 			
 		}
+
 		function setSize(x,y) {
 			player.setSize(x,y)
 		}
+
 		function onReady() {
 			iframe = $('#player');
 			alert("canPlayThrough");
 			playFullscreen();
 		}
+
 		function onPlayerStateChange(event) {
 			switch(event.data) {
 			case 3:
@@ -55,24 +61,30 @@
 				break;
 			}
 		}
+
 		function seekTo(time) {
 			player.seekTo(time);
 		}
+
 		function pauseVid() {
 			player.pauseVideo();
 		}
+
 		function playVid() {
 			player.playVideo();
 		}
+
 		function getTime() {
 			alert("time:" + player.getCurrentTime());
 		}
+
 		function playFullscreen(){
   			var requestFullScreen = iframe.requestFullScreen || iframe.mozRequestFullScreen || iframe.webkitRequestFullScreen;
   			if (requestFullScreen) {
     				requestFullScreen.bind(iframe)();
   			}
 		}
+
         </script>
     </body>
 </html>

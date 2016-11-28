@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import org.zapto.mike.mrstreamserver.Packet;
-import org.zapto.mike.mrstreamserver.Video;
 import org.zapto.mike.mrstreamserver.VideoClient;
 
 class PacketHandler implements Runnable{
@@ -46,6 +45,7 @@ class PacketHandler implements Runnable{
 			PacketThread(Packet p) {
 				this.p = p;
 			}
+			@SuppressWarnings("unchecked")
 			@Override
 			public void run() {
 				switch(p.getType()) {
@@ -124,7 +124,7 @@ class PacketHandler implements Runnable{
 							vs.removeClientFromList((VideoClient)p.getData()[1], (String)p.getData()[2]);
 							break;
 						case "loadURL":
-							vs.loadVideo((Video)p.getData()[1]);
+							vs.loadVideo((String)p.getData()[1]);
 							break;
 						case "canPlay":
 							vs.updateCanPlay((String)p.getData()[1], (boolean)p.getData()[2]);
@@ -132,7 +132,7 @@ class PacketHandler implements Runnable{
 						case "startUp":
 							vs.buildInitalClientList((Object[])p.getData()[1], (String)p.getData()[2]);
 							if(p.getData()[3] != null) {
-								vs.loadVideo((Video)p.getData()[3]);
+								vs.loadVideo((String)p.getData()[3]);
 								vs.seekTo((double)p.getData()[4]);
 							}
 							break;

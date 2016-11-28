@@ -9,7 +9,7 @@ public class VideoHandler implements Runnable{
 	private boolean stopping;
 	private double globalTime; // Global time
 	private final double minTimeDiff = 1; // Minimum time difference between clients
-	private Video currentVideo;
+	private String currentVideo;
 	private Channel parentChannel;
 	private boolean canPlay;
 	private boolean isPlaying;
@@ -138,7 +138,7 @@ public class VideoHandler implements Runnable{
 	}
 
 	void setVideo(String url) {
-		currentVideo = new Video(url, parentChannel.getOwner().getName(), "Video name:");
+		currentVideo = url;
 		sendVideoPacket(new Packet("video", "loadURL", currentVideo));
 	}
 

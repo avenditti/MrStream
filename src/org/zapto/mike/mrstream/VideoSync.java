@@ -8,7 +8,6 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 
 import org.zapto.mike.mrstreamserver.Packet;
-import org.zapto.mike.mrstreamserver.Video;
 import org.zapto.mike.mrstreamserver.VideoClient;
 
 import javafx.application.Application;
@@ -67,7 +66,7 @@ public class VideoSync extends Application {
 	private Stage videoStage;
 	private Stage videoControls;
 	private WebView webView;
-	private Video currentVideo;
+	private String currentVideo;
 	private PacketHandler handler;
 	private PrintStream serverOut;
 	private HashMap<String, ClientEntry> clientList;
@@ -406,13 +405,13 @@ public class VideoSync extends Application {
 		});
 	}
 
-	void loadVideo(Video v) {
+	void loadVideo(String v) {
 		try {
 			handler.sendPacket(new Packet("video", "cantPlayThrough"));
 		} catch (IOException e) {		}
 		this.currentVideo = v;
 		if(currentVideo != null) {
-			loadURL(currentVideo.getUrl());
+			loadURL(currentVideo);
 		} else {
 			serverOut.println("Error loading video");
 		}

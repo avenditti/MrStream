@@ -67,7 +67,9 @@ public class MrStreamServer extends Application{
 		grid.add(textArea, 0, 0);
 		grid.add(field, 0, 1);
 		stage.show();
-		//Create the server main listening thread and the command handler thread
+		/*
+		 * Create the server main listening thread and the command handler thread
+		 */
 		Server server = new Server(out);
 		CommandHandler ch = new CommandHandler(field, out, server);
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -78,7 +80,9 @@ public class MrStreamServer extends Application{
 			}
 
 		});
-		//Start the threads
+		/*
+		 * Start the threads
+		 */
 		new Thread(ch).start();
 		new Thread(server).start();
 	}

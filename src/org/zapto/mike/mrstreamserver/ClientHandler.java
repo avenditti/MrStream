@@ -120,37 +120,39 @@ class ClientHandler implements Runnable{
 	}
 
 	private void handleVideoPacket(Packet p) throws IOException {
-		switch((String)p.getData()[0]) {
-		case "play":
-			if(name.equals(channel.getOwner().getName())) {
+		if(channel != null) {
+			switch((String)p.getData()[0]) {
+			case "play":
+				if(name.equals(channel.getOwner().getName())) {
+					channel.handleVideoPacket(p, this);
+				} else {
+					sendServerMessage("Invalid Permissions");
+				}
+				break;
+			case "seekTo":
+				if(name.equals(channel.getOwner().getName())) {
+					channel.handleVideoPacket(p, this);
+				} else {
+					sendServerMessage("Invalid Permissions");
+				}
+				break;
+			case "pause":
+				if(name.equals(channel.getOwner().getName())) {
+					channel.handleVideoPacket(p, this);
+				} else {
+					sendServerMessage("Invalid Permissions");
+				}
+				break;
+			case "addRequest":
+				if(name.equals(channel.getOwner().getName())) {
+					channel.handleVideoPacket(p, this);
+				} else {
+					sendServerMessage("Invalid Permissions");
+				}
+				break;
+			default:
 				channel.handleVideoPacket(p, this);
-			} else {
-				sendServerMessage("Invalid Permissions");
 			}
-			break;
-		case "seekTo":
-			if(name.equals(channel.getOwner().getName())) {
-				channel.handleVideoPacket(p, this);
-			} else {
-				sendServerMessage("Invalid Permissions");
-			}
-			break;
-		case "pause":
-			if(name.equals(channel.getOwner().getName())) {
-				channel.handleVideoPacket(p, this);
-			} else {
-				sendServerMessage("Invalid Permissions");
-			}
-			break;
-		case "addRequest":
-			if(name.equals(channel.getOwner().getName())) {
-				channel.handleVideoPacket(p, this);
-			} else {
-				sendServerMessage("Invalid Permissions");
-			}
-			break;
-		default:
-			channel.handleVideoPacket(p, this);
 		}
 	}
 

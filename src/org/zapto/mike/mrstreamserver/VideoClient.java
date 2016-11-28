@@ -40,4 +40,5 @@ public class VideoClient implements Serializable{
 	ClientHandler getClient() {
 		return c;
 	}
+	
 }
