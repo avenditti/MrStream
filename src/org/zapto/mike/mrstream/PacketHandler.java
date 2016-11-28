@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import org.zapto.mike.mrstreamserver.Packet;
 import org.zapto.mike.mrstreamserver.Video;
@@ -54,6 +55,22 @@ class PacketHandler implements Runnable{
 				case "serverChat":
 					serverOut.println((String)p.getData()[0]);
 					break;
+				case "clientList": 
+					switch((String)p.getData()[0]) {
+					case "joined":
+						stream.newClient((String)p.getData()[1]);
+						break;
+					case "left":
+						stream.removeClient((String)p.getData()[1]);
+						break;
+					case "initial":
+						stream.clearClientList();
+						ArrayList<String> clients = (ArrayList<String>)p.getData()[1];
+						for (String name : clients) {
+							stream.newClient(name);
+						}
+						break;
+					}
 				case "channel":
 					switch((String)p.getData()[0]) {
 					case "initList":

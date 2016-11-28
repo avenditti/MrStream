@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.zapto.mike.mrstreamserver.Packet;
 
@@ -94,6 +95,7 @@ public final class MrStream extends Application {
 	private PrintStream channelStream;
 	private LoginGui lg;
 	private VideoSync videoSync;
+	private HashMap<String, Label> clients;
 	private ArrayList<Channel> channels;
 	private Channel selectedChannel;
 
@@ -114,6 +116,7 @@ public final class MrStream extends Application {
 		main = new Stage();
 		try {
 			channels = new ArrayList<Channel>();
+			clients = new HashMap<String, Label>();
 			/*
 			 * Initialize the gui with the fxml document
 			 */
@@ -205,6 +208,8 @@ public final class MrStream extends Application {
 			@Override
 			public void handle(ActionEvent event) {
 				try {
+					channelList.getChildren().clear();
+					clientList.getChildren().clear();
 					handler.close();
 					inputText.setEditable(false);
 				} catch(NullPointerException e) {
@@ -449,6 +454,41 @@ public final class MrStream extends Application {
 		});
 	}
 
+	void newClient(String clientName) {
+		Label temp = new Label(clientName);
+		clients.put(clientName, temp);
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				clientList.getChildren().add(clients.get(clientName));
+			}
+
+		});	
+	}
+	
+	void removeClient(String clientName) {
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				clientList.getChildren().remove(clients.get(clientName));
+			}
+
+		});
+	}
+	
+	void clearClientList() {
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				clientList.getChildren().clear();
+			}
+
+		});
+	}
+	
 	void newChannel(String ownerName, String channelName) {
 		Channel c = new Channel(ownerName, channelName);
 		synchronized(channels) {
@@ -488,9 +528,6 @@ public final class MrStream extends Application {
 				}
 			}
 		}
-		/*
-		 * request clientList
-		 */
 	}
 
 	public void removeChannel(String channelName) {

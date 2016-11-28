@@ -6,7 +6,6 @@ import java.net.Socket;
 
 class ClientHandler implements Runnable{
 
-	private Socket sock;
 	private String name;
 	private PacketHandler handler;
 	private PrintStream out;
@@ -19,7 +18,6 @@ class ClientHandler implements Runnable{
 	public ClientHandler(Socket sock, PrintStream out, Server server) throws IOException, ClassNotFoundException {
 		this.name = "null";
 		this.stopping = false;
-		this.sock = sock;
 		this.out = out;
 		this.server = server;
 		handler = new PacketHandler(sock);
@@ -35,10 +33,8 @@ class ClientHandler implements Runnable{
 			if(!this.server.validName((String)p.data[0])) {
 				out.println("Client tried to connect with invalid name: " + (String)p.data[0]);
 				handler.sendPacket(new Packet("nameTaken"));
+				throw new IOException();
 			}
-			/*
-			 * 	Once the name is accepted tell the client
-			 */
 			name = (String)p.data[0];
 			handler.sendPacket(new Packet("nameAccepted", name ));
 			handler.sendPacket(new Packet("channel", "initList", server.getChannelList()));
@@ -49,6 +45,11 @@ class ClientHandler implements Runnable{
 			throw new IOException();
 		}
 	}
+	
+	public ClientHandler(String name, Server server) {
+		this.name = name;
+		this.server = server;
+	};
 
 	@Override
 	public void run() {
@@ -68,8 +69,10 @@ class ClientHandler implements Runnable{
 				try {
 					switch(p.getType()) {
 					case "chat":
-						out.println(name + ":" + p.getData()[0]);
-						channel.notifyChannel(name + ": " + (String)p.getData()[0]);
+						if(channel != null) {
+							out.println(channel.getName() + ": " + name + ":" + p.getData()[0]);
+							channel.notifyChannel(name + ": " + (String)p.getData()[0]);
+						}
 						break;
 					case "video":
 						handleVideoPacket(p);
@@ -160,7 +163,11 @@ class ClientHandler implements Runnable{
 			channel.removeClient(this);
 		}
 		channel = c;
-		sendPacket(new Packet("channel", "move", c.getName()));
+		if(c != null) {
+			sendPacket(new Packet("channel", "move", c.getName()));
+		} else {
+			sendPacket(new Packet("channel", "move", ""));
+		}
 	}
 
 	String getName() {
@@ -176,7 +183,7 @@ class ClientHandler implements Runnable{
 
 	@Override
 	public String toString() {
-		return name + " " + sock.getInetAddress().getHostAddress();
+		return name;
 	}
 
 	void sendMessage(String message) {
@@ -217,6 +224,10 @@ class ClientHandler implements Runnable{
 	}
 
 	String getCurrentChannelName() {
-		return channel.getName();
+		return channel != null ? channel.getName() : "";
+	}
+
+	Channel getChannel() {
+		return channel;
 	}
 }

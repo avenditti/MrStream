@@ -54,9 +54,16 @@ class CommandHandler implements Runnable{
 		case "list":
 			listClients();
 			break;
+		case "listchannels":
+			listChannels();
+			break;
 		}
 	}
 
+	private void listChannels() {
+		out.print(server.getChannelListString());
+	}
+	
 	private void listClients() {
 		out.print(server.getGlobalClientList());
 	}

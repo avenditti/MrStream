@@ -16,26 +16,19 @@ class Server implements Runnable{
 	private ArrayList<Channel> channels;
 	PrintStream out;
 	private BooleanProperty stopping;
-	final Channel rootChannel;
+//	final Channel rootChannel;
 	private final int port = 25567;
 
 	public Server(PrintStream serverPrint) {
 		/*
 		 *	Create a boolean listener to shutdown the server socket when closed
 		 */
-		rootChannel = new Channel(null,"Root", this) {
-
-			@Override
-			void removeClient(ClientHandler client) {
-				clients.remove(client);
-				notifyServerChat(client.getName() + " left the channel");
-			}
-		};
+//		rootChannel = new Channel("Owner","Root", this);
 		globalClientList = new ArrayList<ClientHandler>();
 		stopping = new SimpleBooleanProperty(false);
 		this.out = serverPrint;
 		channels = new ArrayList<Channel>();
-		channels.add(rootChannel);
+//		channels.add(rootChannel);
 		stopping.addListener((obj, oldVal, newVal) -> {
 			try {
 				serverSock.close();
@@ -73,8 +66,8 @@ class Server implements Runnable{
 			public void run() {
 				try {
 					ClientHandler client = new ClientHandler(sock, out, server);
-					channels.get(0).addClient(client);
-					client.setChannel(channels.get(0));
+//					channels.get(0).addClient(client);
+//					client.setChannel(channels.get(0));
 					globalClientList.add(client);
 				} catch (IOException | ClassNotFoundException e) {
 					try {
@@ -150,18 +143,31 @@ class Server implements Runnable{
 	String[] getChannelList() {
 		synchronized(channels) {
 			String[] channelNames = new String[channels.size()];
-			channelNames[0] = "Root:Server";
-			for (int i = 1; i < channelNames.length; i++) {
+			for (int i = 0; i < channelNames.length; i++) {
 				channelNames[i] = channels.get(i).getName() + ":" + channels.get(i).getOwner().getName();
 			}
 			return channelNames;
 		}
+	}
+	
+	String getChannelListString() {
+		String temp = ""; 
+		for (Channel channel : channels) {
+			temp += channel.getName() + "\n";
+			for(ClientHandler c : channel.clients) {
+				temp += c.getName() + "\n";
+			}
+		}
+		return temp;
 	}
 
 	void addChannel(String channelName, ClientHandler owner) {
 		Channel channel = new Channel(owner, channelName, this);
 		channels.add(channel);
 		sendToGlobalList(new Packet("channel", "newChannel", owner.getName(), channelName));
+		if(owner.getChannel() != null) {
+			owner.getChannel().removeClient(owner);
+		}
 		moveClient(channel, owner);
 	}
 
