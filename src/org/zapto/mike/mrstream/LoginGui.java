@@ -55,7 +55,6 @@ public class LoginGui {
 		fadeIn.setDuration(new Duration(500));
 	    fadeIn.setFromValue(0.0);
 	    fadeIn.setToValue(1.0);
-	    vbox.setOpacity(50);
 	    main.setOnShown(new EventHandler<WindowEvent>() {
 
 			@Override
