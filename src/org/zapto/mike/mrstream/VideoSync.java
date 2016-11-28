@@ -399,7 +399,13 @@ public class VideoSync extends Application {
 
 			@Override
 			public void run() {
-				webView.getEngine().executeScript(script);
+				try {
+					webView.getEngine().executeScript(script);
+				} catch(netscape.javascript.JSException e) {
+					/*
+					 * Handle Javascript exceptions
+					 */
+				}
 			}
 
 		});

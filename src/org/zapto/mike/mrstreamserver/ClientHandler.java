@@ -180,7 +180,9 @@ class ClientHandler implements Runnable{
 		stopping = true;
 		handler.stop();
 		server.removeClient(this);
-		channel.removeClient(this);
+		if(channel != null) {
+			channel.removeClient(this);
+		}
 	}
 
 	@Override

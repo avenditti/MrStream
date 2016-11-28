@@ -214,5 +214,6 @@ public class VideoHandler implements Runnable{
 
 	public void shutdown() {
 		this.stopping = true;
+		this.isPlaying = false;
 	}
 }

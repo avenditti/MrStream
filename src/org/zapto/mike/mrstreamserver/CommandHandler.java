@@ -13,10 +13,13 @@ class CommandHandler implements Runnable{
 	private boolean isConsole = true;
 	private PrintStream out;
 	private Server server;
+	private boolean stopping;
+	private Scanner scan;
 
 	public CommandHandler(PrintStream out, Server server) {
 		this.server = server;
 		this.out = out;
+		server.ch = this;
 	}
 
 	public CommandHandler(TextField field, PrintStream out, Server server) {
@@ -24,6 +27,7 @@ class CommandHandler implements Runnable{
 		this.out = out;
 		this.field = field;
 		isConsole = false;
+		server.ch = this;
 	}
 
 	@Override
@@ -67,11 +71,18 @@ class CommandHandler implements Runnable{
 	private void listClients() {
 		out.print(server.getGlobalClientList());
 	}
-
+	
+	void stop() {
+		if(scan != null) {
+			stopping = true;
+			scan.close();
+		}
+	}
+	
 	private void startConsole() {
-		@SuppressWarnings("resource")
-		Scanner scan = new Scanner(System.in);
-		while(true) {
+		scan = new Scanner(System.in);
+		stopping = false;
+		while(!stopping) {
 			execute(scan.next());
 		}
 	}

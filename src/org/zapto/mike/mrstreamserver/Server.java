@@ -16,6 +16,7 @@ class Server implements Runnable{
 	private ArrayList<Channel> channels;
 	PrintStream out;
 	private BooleanProperty stopping;	
+	CommandHandler ch;
 	private final int port = 25567;
 
 	public Server(PrintStream serverPrint) {
@@ -87,14 +88,20 @@ class Server implements Runnable{
 	}
 
 	void stop() {
+		ch.stop();
 		stopping.set(true);
 		synchronized (channels) {
 			for (int i = 1; i < channels.size(); i++) {
-				channels.get(i);
+				channels.get(i).closeChannel();
 			}
 		}
 		while(globalClientList.size() > 0) {
 			globalClientList.get(0).closeConnection();
+		}
+		try {
+			serverSock.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
