@@ -51,7 +51,7 @@ class Channel{
 			clientHandler.sendPacket(new Packet("clientList", "joined", client.getName()));
 		}
 		clients.add(client);
-		client.sendMessage("Owner of channel - " + channelOwner);
+		client.sendServerMessage("Owner of channel - " + channelOwner);
 	}
 
 	void removeClient(ClientHandler client) {
@@ -60,21 +60,66 @@ class Channel{
 				ch.sendPacket(new Packet("clientList", "left", client.getName()));
 			}
 		}
-		if(client.getName().equals(channelOwner) && clients.size() >= 1 && !channelName.equals("Root")) {
-			clients.remove(client);
-			channelOwner = clients.get(0);
-			videoHandler.removeClient(client);
-		} else {
-			clients.remove(client);
-			videoHandler.removeClient(client);
-		}
-		if(clients.size() <= 0 && !channelName.equals("Root")) {
+		client.sendPacket(new Packet("clientList", "clear"));
+		clients.remove(client);
+		if(clients.size() <= 0) {
 			closeChannel();
 			return;
 		}
-		clientList.remove(client.getName());
-		notifyChannel(client.getName() + " left the channel");
-		client.sendMessage("You have left the channel " + channelName);
+		if(clients.size() >= 1) {
+			promotePlayer(clients.get(0).getName(), client);
+			videoHandler.removeClient(client);
+			clientList.remove(client.getName());
+			notifyServerChat(client.getName() + " left the channel");
+			client.sendServerMessage("You have left the channel " + channelName);
+		}
+	}
+	
+	void promotePlayer(String name, ClientHandler c) {
+		if(c.getName().equals(getOwner().getName())) {
+			ClientHandler temp = null;
+				for (ClientHandler ch : clients) {
+					if(ch.getName().equals(name)) {
+						temp = ch;
+					}
+				}
+				if(temp == null) {
+					c.sendServerMessage("Could not find user");
+					return;
+				} 
+				temp.setChannel(null);
+				channelOwner = temp;
+				notifyServerChat(name + " was promoted to channel owner");
+				temp.sendServerMessage("You have been promoted");
+		} else {
+			c.sendServerMessage("Insufficent Permissions");
+		}
+	}
+	
+	void kickClient(String name, ClientHandler c) {
+		if(c.getName().equals(getOwner().getName())) {
+			ClientHandler temp = null;
+				for (ClientHandler ch : clients) {
+					if(!ch.getName().equals(name)) {
+						ch.sendPacket(new Packet("clientList", "left", name));
+					} else {
+						temp = ch;
+					}
+				}
+				if(temp == null) {
+					c.sendServerMessage("Could not find user");
+					return;
+				}
+				temp.setChannel(null);
+				clients.remove(name);
+				videoHandler.removeClient(temp);
+				clientList.remove(name);
+				temp.sendPacket(new Packet("clientList", "clear"));
+				notifyServerChat(name + " was kicked from the channel");
+				temp.sendServerMessage("You have been kicked from the channel " + channelName);
+		} else {
+			c.sendServerMessage("Insufficent Permissions");
+		}
 	}
 
 	void notifyChannel(String message) {

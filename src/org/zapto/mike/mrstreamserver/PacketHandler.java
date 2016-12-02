@@ -23,9 +23,13 @@ public class PacketHandler {
 		}
 	}
 
-	void sendPacket(Packet p) throws IOException{
+	void sendPacket(Packet p){
 		synchronized(oos) {
-			oos.writeObject(p);
+			try {
+				oos.writeObject(p);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

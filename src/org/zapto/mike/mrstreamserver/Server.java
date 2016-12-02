@@ -99,7 +99,9 @@ class Server implements Runnable{
 			globalClientList.get(0).closeConnection();
 		}
 		try {
-			serverSock.close();
+			if(serverSock != null) {
+				serverSock.close();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -118,6 +120,9 @@ class Server implements Runnable{
 	}
 
 	void removeClient(ClientHandler client) {
+		if(client.getChannel() != null) {
+			client.getChannel().removeClient(client);	
+		}
 		globalClientList.remove(client);
 		notifyGlobalList(client.getName() + " disconnected from the server");
 	}
@@ -178,7 +183,8 @@ class Server implements Runnable{
 		/*
 		 * Send update channel populations here
 		 */
-		if(canJoin && !channel.getName().equals(client.getCurrentChannelName())) {
+		System.out.println(channel != client.getChannel());
+		if(canJoin && channel != client.getChannel()) {
 			client.setChannel(channel);
 			channel.addClient(client);
 		} else {
@@ -203,7 +209,7 @@ class Server implements Runnable{
 
 	boolean moveClient(ClientHandler client, String channelName) {
 		for(Channel c : channels) {
-			if(c.getName().equals(channelName)) {
+			if(c.getName().equals(channelName) && !c.getName().equals(channelName)) {
 				c.addClient(client);
 				client.setChannel(c);
 				return true;

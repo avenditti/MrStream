@@ -14,12 +14,14 @@ class ClientHandler implements Runnable{
 	private boolean stopping;
 	private Channel channel;
 	private double currentTime;
+	private Socket clientSock;
 
 	public ClientHandler(Socket sock, PrintStream out, Server server) throws IOException, ClassNotFoundException {
 		this.name = "null";
 		this.stopping = false;
 		this.out = out;
 		this.server = server;
+		this.clientSock = sock;
 		handler = new PacketHandler(sock);
 		thread = new Thread(this);
 		/*
@@ -74,6 +76,9 @@ class ClientHandler implements Runnable{
 							channel.notifyChannel(name + ": " + (String)p.getData()[0]);
 						}
 						break;
+					case "shutdown":
+						closeConnection();
+						break;
 					case "video":
 						handleVideoPacket(p);
 						break;
@@ -115,6 +120,11 @@ class ClientHandler implements Runnable{
 				server.addChannel((String)p.getData()[1], this);
 			}
 			break;
+		case "kick":
+			channel.kickClient((String)p.getData()[1], this);
+			break;
+		case "promote":
+			channel.promotePlayer((String)p.getData()[1], this);
 		}
 
 	}
@@ -177,12 +187,12 @@ class ClientHandler implements Runnable{
 	}
 
 	void closeConnection() {
-		stopping = true;
-		handler.stop();
-		server.removeClient(this);
 		if(channel != null) {
 			channel.removeClient(this);
 		}
+		stopping = true;
+		handler.stop();
+		server.removeClient(this);
 	}
 
 	@Override
@@ -192,43 +202,28 @@ class ClientHandler implements Runnable{
 
 	void sendMessage(String message) {
 		synchronized(handler) {
-			try {
+			if(!clientSock.isClosed()) {
 				handler.sendPacket(new Packet("chat", message));
-			} catch (IOException e) {
-				out.println("Failed to send chat packet to client : " + name);
 			}
 		}
 	}
 
 	void sendPacket(Packet p) {
 		synchronized(handler) {
-			try {
+			if(!clientSock.isClosed()) {
 				handler.sendPacket(p);
-			} catch (IOException e) {
-				out.println("Failed to send " + p.type + " packet to client :" + name);
-				if(e instanceof java.net.SocketException) {
-					this.closeConnection();
-				}
-				e.printStackTrace();
 			}
 		}
 	}
 
 	void sendServerMessage(String message) {
-		try {
+		if(!clientSock.isClosed()) {
 			handler.sendPacket(new Packet("serverChat", message));
-		} catch (IOException e) {
-			out.println("Failed to send server chat packet to client : " + name + " MESSAGE: " + message);
-			e.printStackTrace();
 		}
 	}
 
 	Double getCurrentTime() {
 		return currentTime;
-	}
-
-	String getCurrentChannelName() {
-		return channel != null ? channel.getName() : "";
 	}
 
 	Channel getChannel() {

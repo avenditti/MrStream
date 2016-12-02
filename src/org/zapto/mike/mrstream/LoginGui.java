@@ -3,12 +3,14 @@ package org.zapto.mike.mrstream;
 import java.io.IOException;
 
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -37,6 +39,7 @@ public class LoginGui {
 
 	private Stage main;
 	private MrStream mrStream;
+	private boolean connecting;
 
 	public LoginGui(Stage stage, MrStream mrStream) {
 		main = stage;
@@ -45,6 +48,30 @@ public class LoginGui {
 
 	@FXML
 	private void initialize() {
+		class LoginHelperThread implements Runnable {
+			
+			@Override
+			public void run() {
+				if(!connecting) {
+					
+					Platform.runLater(new Runnable() {
+
+						@Override
+						public void run() {
+							try {
+								connecting = true;
+								mrStream.connect(serverAddress.getText(),alias.getText());
+								connecting = false;
+							} catch(IOException | NumberFormatException | ConnectionError e) {
+								e.printStackTrace();
+							}
+						}
+						
+					});
+				
+				}
+			}
+		}
 		FadeTransition fadeOut = new FadeTransition();
 		fadeOut.setNode(anchorPane);
 		fadeOut.setDuration(new Duration(500));
@@ -63,6 +90,26 @@ public class LoginGui {
 			}
 
 		});
+	    alias.setOnKeyTyped(new EventHandler<KeyEvent>() {
+
+			@Override
+			public void handle(KeyEvent event) {
+				if((int)event.getCharacter().toCharArray()[0] == 13) {
+					new Thread(new LoginHelperThread()).start();
+				}
+			}
+	    	
+	    });
+	    serverAddress.setOnKeyTyped(new EventHandler<KeyEvent>() {
+
+			@Override
+			public void handle(KeyEvent event) {
+				if((int)event.getCharacter().toCharArray()[0] == 13) {
+					new Thread(new LoginHelperThread()).start();
+				}
+			}
+	    	
+	    });
 	    close.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -83,15 +130,12 @@ public class LoginGui {
 
 			@Override
 			public void handle(ActionEvent event) {
-				try {
-					mrStream.connect(serverAddress.getText(),alias.getText());
-				} catch(IOException | ConnectionError e) {
-					System.out.println("Server rejected connection");
-				}
+				new Thread(new LoginHelperThread()).start();
 			}
 
 		});
 	}
+	
 
 	void changeStatus(String status) {
 		statusLabel.setText(status);

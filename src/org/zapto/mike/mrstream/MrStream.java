@@ -97,6 +97,7 @@ public final class MrStream extends Application {
 	private HashMap<String, Label> clients;
 	private ArrayList<Channel> channels;
 	private Channel selectedChannel;
+	private Label selectedClient;
 
 	@FXML
 	private void initialize() {
@@ -134,7 +135,7 @@ public final class MrStream extends Application {
 
 	void shutdown() {
 		try {
-			sock.close();
+			handler.sendPacket(new Packet("shutdown"));
 		} catch (IOException | NullPointerException e) {}
 		try {
 			videoSync.shutdown();
@@ -159,7 +160,7 @@ public final class MrStream extends Application {
 			@Override
 			public void handle(ActionEvent event) {
 				try {
-					if(selectedChannel != null && !sock.isClosed()) {
+					if(selectedChannel != null) {
 						handler.sendPacket(new Packet("channel", "join", selectedChannel.getName()));
 					}
 				} catch (IOException e) {
@@ -187,6 +188,34 @@ public final class MrStream extends Application {
 				}
 			}
 
+		});
+		promote.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				try {
+					if(selectedClient != null) {
+						handler.sendPacket(new Packet("channel", "promote", selectedClient.getText()));
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		});
+		kick.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				try {
+					if(selectedClient != null) {
+						handler.sendPacket(new Packet("channel", "kick", selectedClient.getText()));
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
 		});
 		/*
 		 * Handle connect option
@@ -282,7 +311,7 @@ public final class MrStream extends Application {
 			}
 		} catch (IOException e) {
 			lg.changeStatus("No server on this address");
-			throw new ConnectionError();
+			return;
 		}
 		handler = new PacketHandler(sock, serverStream, channelStream, this);
 		handler.sendPacket(new Packet("login", new Object[] { name }));
@@ -455,11 +484,25 @@ public final class MrStream extends Application {
 	void newClient(String clientName) {
 		Label temp = new Label(clientName);
 		clients.put(clientName, temp);
+		temp.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+				if(selectedClient != null) {
+					selectedClient.setTextFill(Color.BLACK);
+				}
+				selectedClient = (Label)event.getSource();
+				selectedClient.setTextFill(Color.RED);
+			}
+			
+		});
 		Platform.runLater(new Runnable() {
 
 			@Override
 			public void run() {
-				clientList.getChildren().add(clients.get(clientName));
+				if(!clientList.getChildren().contains(clients.get(clientName))) {
+					clientList.getChildren().add(clients.get(clientName));
+				}
 			}
 
 		});	

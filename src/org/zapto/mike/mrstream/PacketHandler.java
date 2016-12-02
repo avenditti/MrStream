@@ -70,6 +70,8 @@ class PacketHandler implements Runnable{
 							stream.newClient(name);
 						}
 						break;
+					case "clear":
+						stream.clearClientList();
 					}
 				case "channel":
 					switch((String)p.getData()[0]) {
