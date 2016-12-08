@@ -27,5 +27,5 @@ vid.addEventListener("canplaythrough", function() {
 });
 
 function setVolume(vol) {
-	video.volume = vol * .001;
+	video.volume = vol * .01;
 }
