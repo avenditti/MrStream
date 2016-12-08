@@ -15,7 +15,7 @@ class Server implements Runnable{
 	private ArrayList<ClientHandler> globalClientList;
 	private ArrayList<Channel> channels;
 	PrintStream out;
-	private BooleanProperty stopping;	
+	private BooleanProperty stopping;
 	CommandHandler ch;
 	private final int port = 25567;
 
@@ -121,7 +121,7 @@ class Server implements Runnable{
 
 	void removeClient(ClientHandler client) {
 		if(client.getChannel() != null) {
-			client.getChannel().removeClient(client);	
+			client.getChannel().removeClient(client);
 		}
 		globalClientList.remove(client);
 		notifyGlobalList(client.getName() + " disconnected from the server");
@@ -156,9 +156,9 @@ class Server implements Runnable{
 			return channelNames;
 		}
 	}
-	
+
 	String getChannelListString() {
-		String temp = ""; 
+		String temp = "";
 		for (Channel channel : channels) {
 			temp += channel.getName() + "\n";
 			for(ClientHandler c : channel.clients) {
@@ -183,7 +183,6 @@ class Server implements Runnable{
 		/*
 		 * Send update channel populations here
 		 */
-		System.out.println(channel != client.getChannel());
 		if(canJoin && channel != client.getChannel()) {
 			client.setChannel(channel);
 			channel.addClient(client);
@@ -208,8 +207,13 @@ class Server implements Runnable{
 	}
 
 	boolean moveClient(ClientHandler client, String channelName) {
+		String currentChannelName = "Root"; // Implement no empty name channel ----------------
+		if(client.getChannel() != null) {
+			currentChannelName = client.getChannel().getName();
+		}
 		for(Channel c : channels) {
-			if(c.getName().equals(channelName) && !c.getName().equals(channelName)) {
+			System.out.println(channelName);
+			if(c.getName().equals(channelName) && !currentChannelName.equals(channelName)) {
 				c.addClient(client);
 				client.setChannel(c);
 				return true;
